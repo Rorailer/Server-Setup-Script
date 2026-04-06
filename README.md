@@ -10,6 +10,8 @@ A small, practical script set to bootstrap a fresh Ubuntu/Debian server with:
 
 It is designed for quick self-hosting setup without manually wiring every container.
 
+Supported OS: Ubuntu and Debian servers only.
+
 ## What this repo includes
 
 - `setup.sh`: Installs and configures the stack

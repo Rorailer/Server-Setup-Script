@@ -114,6 +114,14 @@ install_docker(){
     log "STEP 2/5: Installing Docker..."
     spacer
 
+    local distro
+    distro=$(. /etc/os-release && echo "$ID")
+
+    if [[ "$distro" != "ubuntu" && "$distro" != "debian" ]]; then
+        err "Unsupported distro for this script: ${distro}. Only Ubuntu and Debian are supported."
+        exit 1
+    fi
+
     if command -v docker &> /dev/null; then
         warn "Docker is already installed. Skipping this step"
         if ! confirm "Reinstall Docker? (Prolly no need (do this if don't have docker compose)) (y/N)";then
@@ -128,11 +136,11 @@ install_docker(){
 
     # Adding offical repo
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    curl -fsSL "https://download.docker.com/linux/${distro}/gpg" -o /etc/apt/keyrings/docker.asc
     chmod a+r /etc/apt/keyrings/docker.asc
         echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
-        https://download.docker.com/linux/ubuntu \
+        https://download.docker.com/linux/${distro} \
         $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
         tee /etc/apt/sources.list.d/docker.list > /dev/null
 
