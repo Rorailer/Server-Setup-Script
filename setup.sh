@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
-
 ## This is a Server Setup Script for Ubuntu and Debian based systems.
 ## This will Update the server , install docker , install nginx proxy manager , portainer and cloudflared
-
 
 # this will stop the script if anything in this script fails. (nothing will go unnoticed)
 set -euo pipefail
 
-
 # --- Variable setup (change in .env file and not here) ----
-
 # this is just to make sure the right file is always selected.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
 
-if [[ -f "$ENV_FILE"]]; then
+if [[ -f "$ENV_FILE" ]]; then
     source "$ENV_FILE"
 fi
-
 
 # --PORTS--
 NPM_HTTP_PORT="${NPM_HTTP_PORT:-80}"
@@ -27,7 +22,6 @@ PORTAINER_PORT="${PORTAINER_PORT:-9000}"
 CLOUDFLARED_TOKEN="${CLOUDFLARED_TOKEN:-}"
 DOCKER_NETWORK_NAME="${DOCKER_NETWORK_NAME:-proxyNetwork}"
 DATA_DIR="${DATA_DIR:-/opt/DATA}"
-
 
 # ---- COLORS ----
 BOLD='\033[1m'
@@ -54,37 +48,32 @@ warn(){
     echo -e "${YELLOW}[WARN]${NC} $*" ;
 }
 
-
 banner(){
     echo -e "${CYAN}${BOLD}";
-    echo "╔══════════════════════════════════════════════════════════════╗";
-    echo "║                     Server Setup Script                      ║";
+    echo "╔════════════════════════════════════════════════════════════════╗";
+    echo "║                      Server Setup Script                     ║";
     echo "║                                                              ║";
-    echo "║     Setting Up: Docker , NPM , Portainer and Cloudflared     ║";
-    echo "╚══════════════════════════════════════════════════════════════╝";
+    echo "║    Setting Up: Docker , NPM , Portainer and Cloudflared      ║";
+    echo "╚════════════════════════════════════════════════════════════════╝";
     echo -e "${NC}";
 }
-
 
 spacer(){
     echo -e "${CYAN}--------------------------------------------------------------${NC}";
 }
 
-
-check_sudo(){
+check_root(){
     if [[ $EUID -ne 0 ]]; then
         err "Run this script with sudo.";
         exit 1;
     fi
 }
 
-approve(){
+confirm(){
     local msg="$1"
     read -rp "$(echo -e "${YELLOW}[??]${NC} $msg [y/N]: ")" choice
-    [[ "$choice" == "y" || "$choice" == "Y"]] && return 0 || return 1 ]]
-    }
-
-
+    [[ "$choice" == "y" || "$choice" == "Y" ]] && return 0 || return 1
+}
 
 # Step 1/5 system update
 update_system(){
@@ -107,7 +96,6 @@ update_system(){
     ok "Update Successful!"
 }
 
-
 # Step 2/5 docker install
 install_docker(){
     spacer
@@ -124,12 +112,11 @@ install_docker(){
 
     if command -v docker &> /dev/null; then
         warn "Docker is already installed. Skipping this step"
-        if ! confirm "Reinstall Docker? (Prolly no need (do this if don't have docker compose)) (y/N)";then
+        if ! confirm "Reinstall Docker? (Prolly no need (do this if don't have docker compose)) (y/N)"; then
             ok "skipping"
             return
         fi
     fi
-
 
     # Clean up old stuff
     apt-get remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
@@ -138,6 +125,7 @@ install_docker(){
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL "https://download.docker.com/linux/${distro}/gpg" -o /etc/apt/keyrings/docker.asc
     chmod a+r /etc/apt/keyrings/docker.asc
+
         echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
         https://download.docker.com/linux/${distro} \
@@ -148,26 +136,18 @@ install_docker(){
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-
-
     #enabling and starting docker now.
     systemctl enable docker
     systemctl start docker
 
     #docker network setup
-    docker network create ${DOCKER_NETWORK_NAME} 2>/dev/null || true
+    docker network create "${DOCKER_NETWORK_NAME}" 2>/dev/null || true
 
     ok "Docker Installed: $(docker --version)"
     ok "Docker Compose Installed: $(docker compose version)"
-
-
 }
 
-
-
-
 # Now time for Portainer
-
 setup_portainer(){
     spacer
     log " STEP 3/5: Setting up Portainer..."
@@ -185,23 +165,20 @@ setup_portainer(){
         -p ${PORTAINER_PORT}:9000 \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "${portainer_dir}/data:/data" \
-        --network ${DOCKER_NETWORK_NAME} \
+        --network "${DOCKER_NETWORK_NAME}" \
         portainer/portainer-ce:latest
     
     ok "Portainer setup at http://localhost:${PORTAINER_PORT} or http://<server-ip>:${PORTAINER_PORT}"
 }
 
 # Nginx Proxy Manager
-
 setup_npm(){
     spacer
     log "STEP 4/5: Setting up Nginx Proxy Manager..."
     spacer
 
-
     local npm_dir="${DATA_DIR}/nginx-proxy-manager"
     mkdir -p "${npm_dir}/data" "${npm_dir}/letsencrypt"
-
 
     cat > "${npm_dir}/docker-compose.yml" <<EOF
 services:
@@ -223,8 +200,6 @@ networks:
         external: true
 EOF
 
-
-
     #deployement
     cd "${npm_dir}"
     docker compose down 2>/dev/null || true
@@ -236,7 +211,6 @@ EOF
 }
 
 # STEP 5/5 Cloudflared
-
 setup_cloudflared(){
     spacer
     log "STEP 5/5: Setup Cloudflared..."
@@ -252,10 +226,9 @@ setup_cloudflared(){
         read -rp "$(echo -e "${YELLOW}[?]${NC} Enter your Cloudflare Tunnel token (or press Enter to skip): ")" CLOUDFLARED_TOKEN
 
         if [[ -z "$CLOUDFLARED_TOKEN" ]]; then
-            warn "Skipping CLoudflared setup."
+            warn "Skipping Cloudflared setup."
             return
         fi
-
     fi
 
     # initial cleanup
@@ -272,28 +245,24 @@ setup_cloudflared(){
     ok "Cloudflared tunnel is setup."
 }
 
-
 # UFW SETUP
-
-confire_firewall(){
+configure_firewall(){
     spacer
     log "Setting up UFW"
     spacer
 
-
     ufw --force reset
     ufw default deny incoming
     ufw default allow outgoing
-
 
     # Ask for SSH port
     echo ""
     echo -e "  ${BOLD}What SSH port is your server using?${NC}"
     echo -e "  ${YELLOW}Press Enter if you don't know (default: 22)${NC}"
     echo ""
+
     read -rp "$(echo -e "${CYAN}[?]${NC} SSH port [22]: ")" SSH_PORT
     SSH_PORT="${SSH_PORT:-22}"
-
 
     if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || (( SSH_PORT < 1 || SSH_PORT > 65535 )); then
         err "Invalid SSH port. Using default port 22."
@@ -301,10 +270,6 @@ confire_firewall(){
     fi
 
     log "Using SSH port: ${SSH_PORT}"
- 
-    ufw --force reset
-    ufw default deny incoming
-    ufw default allow outgoing
  
     # SSH
     ufw allow "${SSH_PORT}/tcp" comment 'SSH'
@@ -320,7 +285,6 @@ confire_firewall(){
     ufw --force enable
     ok "Firewall configured and enabled"
 }
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 #  Summary
@@ -385,4 +349,3 @@ main() {
 }
  
 main "$@"
- 
