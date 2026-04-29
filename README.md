@@ -1,26 +1,28 @@
-# Server Setup Script
+# Server Setup Script — Self-Hosting Bootstrap for Docker, Portainer, NPM & Cloudflared
 
-A small, practical script set to bootstrap a fresh Ubuntu/Debian server with:
+A small, practical script set by [rorailer](https://github.com/rorailer) to bootstrap a fresh Ubuntu/Debian VPS into a self-hosting environment in minutes.
+
+It installs and wires up:
 
 - Docker Engine + Docker Compose plugin
-- Portainer
-- Nginx Proxy Manager (NPM)
+- Portainer (Docker management UI)
+- Nginx Proxy Manager (NPM) reverse proxy
 - Optional Cloudflared tunnel
 - UFW firewall rules
 
-It is designed for quick self-hosting setup without manually wiring every container.
+Designed for quick self-hosting setup without manually wiring every container.
 
-Supported OS: Ubuntu and Debian servers only.
+**Supported OS:** Ubuntu and Debian servers only.
 
 ## What this repo includes
 
-- `setup.sh`: Installs and configures the stack
-- `uninstall.sh`: Removes the stack (and optionally Docker + data)
-- `.env.example`: Example configuration values
+- `setup.sh` — Installs and configures the stack
+- `uninstall.sh` — Removes the stack (and optionally Docker + data)
+- `.env.example` — Example configuration values
 
 ## Who this is for
 
-Use this if you want to go from a fresh VPS to a managed Docker + reverse proxy setup fast.
+Use this if you want to go from a fresh VPS to a managed Docker + reverse proxy setup fast — homelabbers, self-hosters, or anyone spinning up a new server who doesn't want to copy-paste twenty commands.
 
 If you prefer fully manual Docker Compose files and custom hardening from day one, this can still be a good starting point to adapt.
 
