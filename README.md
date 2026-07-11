@@ -1,6 +1,6 @@
 # Server Setup Script — Self-Hosting Bootstrap for Docker, Portainer, NPM & Cloudflared
 
-A small, practical script set by [rorailer (Me)](https://github.com/rorailer) to bootstrap a fresh Ubuntu/Debian VPS into a self-hosting environment in minutes.
+A small, practical script set by [Rorailer (Me)](https://github.com/rorailer) to bootstrap a fresh Ubuntu/Debian VPS into a self-hosting environment in minutes.
 
 It installs and wires up:
 
@@ -143,6 +143,8 @@ docker logs npm
 ```bash
 docker logs cloudflared
 ```
+
+[My Site](https://rorailer.com)
 
 ## License
 
